@@ -1,0 +1,154 @@
+name: Daily NBA 3PT Pipeline
+
+on:
+  # Run every day at noon Eastern (17:00 UTC; adjust to 16:00 UTC during EDT)
+  schedule:
+    - cron: "0 17 * * *"
+
+  # Also allow manual runs from the Actions tab
+  workflow_dispatch:
+    inputs:
+      slate_date:
+        description: "Override slate date (YYYY-MM-DD). Leave blank for today."
+        required: false
+        default: ""
+      season_type:
+        description: "Season type: Regular Season or Playoffs"
+        required: false
+        default: "Playoffs"
+
+env:
+  PYTHON: python3
+  VENV: .venv
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ---------------------------------------------------------------
+      # 1. Checkout
+      # ---------------------------------------------------------------
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # Full history so we can push back
+          fetch-depth: 0
+
+      # ---------------------------------------------------------------
+      # 2. Python setup
+      # ---------------------------------------------------------------
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ---------------------------------------------------------------
+      # 3. Determine slate date
+      # ---------------------------------------------------------------
+      - name: Set slate date
+        id: date
+        run: |
+          if [ -n "${{ github.event.inputs.slate_date }}" ]; then
+            echo "slate=${{ github.event.inputs.slate_date }}" >> $GITHUB_OUTPUT
+          else
+            # Use Eastern time (UTC-4 during EDT, UTC-5 during EST).
+            # We run at 17:00 UTC = noon ET (EDT season). The "today"
+            # for today's props is the current calendar date in ET.
+            echo "slate=$(TZ='America/New_York' date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          fi
+          echo "Slate date: $(cat $GITHUB_OUTPUT | grep slate)"
+
+      # ---------------------------------------------------------------
+      # 4. Fetch today's odds from The Odds API
+      # ---------------------------------------------------------------
+      - name: Fetch today's odds
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python fetch_odds.py \
+            --api-key "$ODDS_API_KEY" \
+            --odds-format american \
+            --regions us \
+            --empty-ok \
+            --force
+        # --empty-ok: don't error if no games today (off-season, rest days)
+        # --force: overwrite any existing odds file from earlier today
+
+      # ---------------------------------------------------------------
+      # 5. Update player features (add yesterday's completed games)
+      # ---------------------------------------------------------------
+      - name: Determine season type
+        id: season
+        run: |
+          if [ -n "${{ github.event.inputs.season_type }}" ]; then
+            echo "type=${{ github.event.inputs.season_type }}" >> $GITHUB_OUTPUT
+          else
+            # April 19 onward is typically playoffs; before that is regular season.
+            month=$(TZ='America/New_York' date +%-m)
+            day=$(TZ='America/New_York' date +%-d)
+            if [ "$month" -gt 4 ] || ([ "$month" -eq 4 ] && [ "$day" -ge 19 ]); then
+              echo "type=Playoffs" >> $GITHUB_OUTPUT
+            else
+              echo "type=Regular Season" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Update daily feature data
+        run: |
+          python update_features.py \
+            --season 2025-26 \
+            --season-type "${{ steps.season.outputs.type }}"
+
+      # ---------------------------------------------------------------
+      # 6. Rank today's props (confidence board + ranked output)
+      # ---------------------------------------------------------------
+      - name: Rank player props
+        run: |
+          python rank_props.py \
+            --history data/player_game_3pt_features.csv \
+            --model   models/three_pt_model.joblib \
+            --count-model models/three_pt_count_model.joblib \
+            --slate-date "${{ steps.date.outputs.slate }}"
+
+      # ---------------------------------------------------------------
+      # 7. Refresh the retroactive prediction catalog
+      # ---------------------------------------------------------------
+      - name: Backfill retroactive catalog
+        run: |
+          python backfill_catalog.py \
+            --features data/player_game_3pt_features.csv \
+            --output   data/retroactive_prediction_catalog.csv
+
+      # ---------------------------------------------------------------
+      # 8. Commit updated outputs back to the repo
+      # ---------------------------------------------------------------
+      - name: Commit updated data files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage all generated CSVs (force-add the ones in .gitignore)
+          git add -f data/player_game_3pt_features.csv          || true
+          git add -f data/retroactive_prediction_catalog.csv    || true
+          git add -f data/upcoming_props_features.csv           || true
+          git add -f data/nba_player_props_odds*.csv            || true
+          git add -f data/nba_game_odds*.csv                    || true
+
+          # Also add any confidence / ranked output CSVs (not ignored)
+          git add data/*.csv || true
+
+          # Only commit if there are changes
+          if git diff --cached --quiet; then
+            echo "No data changes — nothing to commit."
+          else
+            git commit -m "chore: daily pipeline update ${{ steps.date.outputs.slate }}"
+            git push
+          fi

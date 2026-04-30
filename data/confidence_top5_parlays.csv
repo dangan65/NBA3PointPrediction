@@ -1,0 +1,15 @@
+recommendation_date,slate_date,legs,parlay_decimal_odds,parlay_american_display,parlay_hit,bet_result,profit_units,settled_date,verified_source,leg_1,leg_2,leg_3,leg_4,leg_5
+2026-03-04,2026-03-03,5,2.3486270473191846,135.0,0.0,LOSS,-1.0,2026-03-03,confidence_tracking,Grayson Allen UNDER 5.5,Austin Reaves OVER 0.5,Russell Westbrook OVER 0.5,Jalen Green UNDER 3.5,Collin Gillespie UNDER 4.5
+2026-03-04,2026-03-04,5,3.0981901603011712,210.0,0.0,LOSS,-1.0,2026-03-04,confidence_tracking,Mikal Bridges OVER 0.5,Coby White OVER 0.5,Payton Pritchard UNDER 3.5,Pascal Siakam OVER 0.5,Cason Wallace OVER 0.5
+2026-03-05,2026-03-04,5,1.8982944726715216,,0.0,LOSS,-1.0,2026-03-04,confidence_tracking,Toumani Camara OVER 0.5,Cam Thomas UNDER 2.5,Darius Garland OVER 0.5,Miles Bridges OVER 0.5,Landry Shamet OVER 0.5
+2026-03-05,2026-03-05,5,14.382652802031153,1338.0,0.0,LOSS,-1.0,2026-03-05,confidence_tracking,Jabari Smith Jr. OVER 1.5,Cooper Flagg OVER 0.5,Max Christie OVER 1.5,Kevin Durant OVER 2.5,Malik Monk OVER 1.5
+2026-03-06,2026-03-06,5,1.1947041182064222,,1.0,WIN,0.1947041182064222,2026-03-06,confidence_tracking,Collin Gillespie OVER 0.5,Jamal Murray OVER 0.5,Derrick White OVER 0.5,Reed Sheppard OVER 0.5,Jalen Brunson OVER 0.5
+2026-03-07,2026-03-07,5,15.53690106354771,1454.0,0.0,LOSS,-1.0,2026-03-07,confidence_tracking,Bobby Portis OVER 1.5,Michael Porter Jr. OVER 2.5,Myles Turner OVER 1.5,Naz Reid OVER 1.5,Noah Clowney OVER 1.5
+2026-03-08,2026-03-07,5,14.889961478956282,1389.0,0.0,LOSS,-1.0,2026-03-07,confidence_tracking,Bobby Portis OVER 1.5,Michael Porter Jr. OVER 2.5,Myles Turner OVER 1.5,Naz Reid OVER 1.5,Wendell Carter Jr. OVER 0.5
+2026-03-17,2026-03-17,5,13.22551673820904,1223.0,0.0,LOSS,-1.0,2026-03-17,confidence_tracking,Aaron Nesmith UNDER 2.5,Jalen Suggs UNDER 2.5,Chet Holmgren UNDER 1.5,Will Riley UNDER 1.5,Kel'el Ware UNDER 1.5
+2026-03-24,2026-03-24,5,17.584189231248057,1658.0,0.0,LOSS,-1.0,2026-03-24,confidence_tracking,Doug McDermott UNDER 2.5,Jevon Carter UNDER 2.5,Malik Monk UNDER 2.5,Brandon Miller UNDER 3.5,Kon Knueppel UNDER 3.5
+2026-03-25,2026-03-25,5,18.05840689789522,1706.0,0.0,LOSS,-1.0,2026-03-25,confidence_tracking,Jaden Hardy UNDER 2.5,Ja'Kobe Walter UNDER 2.5,Bones Hyland UNDER 2.5,Jamir Watkins UNDER 1.5,Tari Eason OVER 0.5
+2026-03-26,2026-03-25,5,18.05840689789522,1706.0,0.0,LOSS,-1.0,2026-03-25,confidence_tracking,Jaden Hardy UNDER 2.5,Ja'Kobe Walter UNDER 2.5,Bones Hyland UNDER 2.5,Jamir Watkins UNDER 1.5,Tari Eason OVER 0.5
+2026-04-14,2026-03-31,5,12.60087919244546,1160.0,1.0,WIN,11.60087919244546,2026-03-31,confidence_tracking,Taurean Prince UNDER 2.5,Jabari Smith Jr. OVER 1.5,Devin Booker UNDER 2.5,Kon Knueppel UNDER 3.5,OG Anunoby UNDER 2.5
+2026-04-30,2026-05-01,5,10.751222715657208,975.0,,,,,,Ja'Kobe Walter UNDER 2.5,Tim Hardaway Jr. OVER 1.5,Max Strus UNDER 2.5,Bones Hyland UNDER 2.5,Jayson Tatum UNDER 3.5
+2026-04-30,2026-04-30,5,10.814689201581986,981.0,,,,,,Jayson Tatum UNDER 3.5,Reed Sheppard UNDER 3.5,Bones Hyland UNDER 2.5,Ayo Dosunmu UNDER 2.5,Ja'Kobe Walter UNDER 2.5

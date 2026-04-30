@@ -1,0 +1,7 @@
+pandas>=2.2
+numpy>=2.0
+scikit-learn>=1.5
+joblib>=1.4
+nba_api>=1.11
+streamlit>=1.43
+plotly>=6.0
