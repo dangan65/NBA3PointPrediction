@@ -13,9 +13,9 @@ on:
         required: false
         default: ""
       season_type:
-        description: "Season type: Regular Season or Playoffs"
+        description: "Season type: Regular Season or Playoffs. Leave blank to pick from the date."
         required: false
-        default: "Playoffs"
+        default: ""
 
 # The commit step pushes updated data back to the repo
 permissions:
@@ -93,26 +93,36 @@ jobs:
       # ---------------------------------------------------------------
       # 5. Update player features (add yesterday's completed games)
       # ---------------------------------------------------------------
-      - name: Determine season type
+      - name: Determine season and season type
         id: season
         run: |
+          year=$(TZ='America/New_York' date +%Y)
+          month=$(TZ='America/New_York' date +%-m)
+          day=$(TZ='America/New_York' date +%-d)
+
+          # A season starts in October: Oct-Dec belong to YYYY-(YY+1),
+          # Jan-Sep belong to (YYYY-1)-YY.
+          if [ "$month" -ge 10 ]; then
+            start=$year
+          else
+            start=$((year - 1))
+          fi
+          echo "season=${start}-$(printf '%02d' $(( (start + 1) % 100 )))" >> $GITHUB_OUTPUT
+
           if [ -n "${{ github.event.inputs.season_type }}" ]; then
             echo "type=${{ github.event.inputs.season_type }}" >> $GITHUB_OUTPUT
+          elif [ "$month" -ge 5 ] && [ "$month" -le 9 ] || ([ "$month" -eq 4 ] && [ "$day" -ge 19 ]); then
+            # April 19 through the Finals is playoffs; Jul-Sep has no games.
+            echo "type=Playoffs" >> $GITHUB_OUTPUT
           else
-            # April 19 onward is typically playoffs; before that is regular season.
-            month=$(TZ='America/New_York' date +%-m)
-            day=$(TZ='America/New_York' date +%-d)
-            if [ "$month" -gt 4 ] || ([ "$month" -eq 4 ] && [ "$day" -ge 19 ]); then
-              echo "type=Playoffs" >> $GITHUB_OUTPUT
-            else
-              echo "type=Regular Season" >> $GITHUB_OUTPUT
-            fi
+            echo "type=Regular Season" >> $GITHUB_OUTPUT
           fi
+          cat $GITHUB_OUTPUT
 
       - name: Update daily feature data
         run: |
           python update_features.py \
-            --season 2025-26 \
+            --season "${{ steps.season.outputs.season }}" \
             --season-type "${{ steps.season.outputs.type }}"
 
       # ---------------------------------------------------------------
