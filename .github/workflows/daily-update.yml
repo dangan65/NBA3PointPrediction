@@ -17,6 +17,10 @@ on:
         required: false
         default: "Playoffs"
 
+# The commit step pushes updated data back to the repo
+permissions:
+  contents: write
+
 env:
   PYTHON: python3
   VENV: .venv
@@ -73,8 +77,12 @@ jobs:
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
+          if [ -z "$ODDS_API_KEY" ]; then
+            echo "::error::ODDS_API_KEY secret is not set. Add it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          # fetch_odds.py reads ODDS_API_KEY from the environment
           python fetch_odds.py \
-            --api-key "$ODDS_API_KEY" \
             --odds-format american \
             --regions us \
             --empty-ok \
