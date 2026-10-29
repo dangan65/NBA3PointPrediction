@@ -29,14 +29,23 @@ cd nba-3pt-props
 
 ## Daily pipeline
 
-Run these in order each morning to refresh today's predictions:
+`daily_update.sh` runs the whole pipeline, picks the season from the date, and commits and pushes the updated data. Store your Odds API key in the macOS Keychain once (it prompts for the key), then install the noon schedule:
 
 ```bash
-# 1. Fetch today's odds
-python fetch_odds.py --api-key YOUR_ODDS_API_KEY --odds-format american --regions us --empty-ok
+security add-generic-password -a "$USER" -s ODDS_API_KEY -w
+./install_schedule.sh
+```
+
+It runs on your Mac rather than GitHub Actions because stats.nba.com blocks GitHub-hosted runners. If the Mac is asleep at noon, it runs on wake. Logs go to `~/Library/Logs/nba3pt-daily-update.log`.
+
+To run the steps by hand:
+
+```bash
+# 1. Fetch today's odds (reads ODDS_API_KEY from the environment)
+python fetch_odds.py --odds-format american --regions us --empty-ok
 
 # 2. Update player features with yesterday's results
-python update_features.py --season 2025-26 --season-type "Playoffs"
+python update_features.py --season 2026-27 --season-type "Regular Season"
 
 # 3. Score & rank today's props
 python rank_props.py \
@@ -48,7 +57,7 @@ python rank_props.py \
 python backfill_catalog.py
 ```
 
-GitHub Actions can run this automatically at noon Eastern every day — see `.github/workflows/daily-update.yml`.
+`.github/workflows/daily-update.yml` can still be started by hand from the Actions tab, but its NBA stats step times out on GitHub's runners.
 
 ---
 
@@ -70,6 +79,8 @@ Key features: `last_5_games_3pm_avg`, `season_avg_3pm`, `last_3_games_3pm`, `opp
 ```
 ├── app.py                                  # Streamlit dashboard
 ├── run.sh                                  # One-command launcher
+├── daily_update.sh                         # Daily pipeline (run by launchd)
+├── install_schedule.sh                     # Installs the noon launchd job
 ├── requirements.txt
 │
 ├── fetch_odds.py                   # Pull odds from The Odds API

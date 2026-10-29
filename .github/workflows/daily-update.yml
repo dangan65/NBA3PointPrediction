@@ -1,11 +1,8 @@
 name: Daily NBA 3PT Pipeline
 
 on:
-  # Run every day at noon Eastern (17:00 UTC; adjust to 16:00 UTC during EDT)
-  schedule:
-    - cron: "0 17 * * *"
-
-  # Also allow manual runs from the Actions tab
+  # Manual runs only. stats.nba.com blocks GitHub-hosted runners, so the
+  # daily run happens locally via daily_update.sh (see install_schedule.sh).
   workflow_dispatch:
     inputs:
       slate_date:
